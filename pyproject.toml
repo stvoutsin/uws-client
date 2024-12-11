@@ -1,0 +1,75 @@
+[project]
+name = "uws-client"
+description = "UWS client library with SODA implementation"
+license = { file = "LICENSE" }
+readme = "README.md"
+keywords = ["rubin", "lsst", "uws", "soda"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Typing :: Typed",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "click",
+    "aiohttp",
+]
+
+version = "0.1.0"
+
+# dynamic = ["version"]
+
+[project.scripts]
+vo-cutout = "uwsclient.cli:cli"
+
+[project.urls]
+Source = "https://github.com/stvoutsin/vo-cutout-client"
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+parallel = true
+branch = true
+source = ["uwsclient"]
+
+[tool.coverage.paths]
+source = ["src", ".tox/*/site-packages"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:"
+]
+
+[tool.mypy]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+ignore_missing_imports = true
+local_partial_types = true
+no_implicit_reexport = true
+show_error_codes = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+python_files = ["tests/*.py", "tests/*/*.py"]
+
