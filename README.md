@@ -90,7 +90,7 @@ asyncio.run(advanced_usage())
 ### Command Line Interface Parameters
 
 ```bash
-rubin-cutout [OPTIONS] IMAGE_IDS...
+vo-cutout [OPTIONS] IMAGE_IDS...
 
 Options:
   -c, --circle TEXT     Circle cutout specification in format "RA DEC RADIUS"
@@ -108,16 +108,16 @@ Options:
 
 ```bash
 # Using circle parameters
-rubin-cutout --circle "55.7467 -32.2862 0.05" \
+vo-cutout --circle "55.7467 -32.2862 0.05" \
     butler://dp02/..
 
 # Specifying output directory
-rubin-cutout -o ./cutouts --circle "55.7467 -32.2862 0.05" \
+vo-cutout -o ./cutouts --circle "55.7467 -32.2862 0.05" \
     butler://dp02/..
 
 # Using environment variable for token
 export RUBIN_TOKEN="your_token_here"
-rubin-cutout --circle "55.7467 -32.2862 0.05" \
+vo-cutout --circle "55.7467 -32.2862 0.05" \
     butler://dp02/..
 ```
 
