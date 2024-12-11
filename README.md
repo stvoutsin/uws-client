@@ -82,10 +82,11 @@ asyncio.run(advanced_usage())
 ```
 ### Cutout Specific Parameters
 
-image_ids: List of butler URIs for images
-circle: Optional circle cutout specifications
-pos: Optional position specifications
-polygon: Optional polygon specifications
+- image_ids: List of butler URIs for images
+- circle: Optional circle cutout specifications
+- pos: Optional position specifications
+- polygon: Optional polygon specifications
+
 
 ### Command Line Interface Parameters
 
