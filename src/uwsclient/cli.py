@@ -1,86 +1,89 @@
-"""Script to perform image cutouts from the Rubin Science Platform using the SODA service."""
-
-import click
 import asyncio
-from typing import Optional
-from pathlib import Path
-from .client import async_cutout
-from .logger import logger
-import logging
+import click
+from uwsclient import UWSClient
 
 
-@click.command()
-@click.argument("image_ids", nargs=-1, required=True)
-@click.option(
-    "--circle",
-    "-c",
-    multiple=True,
-    help='Circle cutout specification in format "RA DEC RADIUS"',
-)
-@click.option("--pos", "-p", multiple=True, help="Position cutout specification")
-@click.option("--polygon", multiple=True, help="Polygon cutout specification")
-@click.option(
-    "--base-url",
-    default="https://data-dev.lsst.cloud",
-    help="Base URL for the SODA service",
-)
-@click.option(
-    "--token",
-    envvar="RUBIN_TOKEN",
-    required=True,
-    help="Authentication token (can also be set via RUBIN_TOKEN environment variable)",
-)
-@click.option(
-    "--output-dir",
-    "-o",
-    default=".",
-    type=click.Path(file_okay=False, dir_okay=True),
-    help="Output directory for cutout files",
-)
-@click.option("--run-id", help="Optional client-provided job identifier")
-@click.option("--debug/--no-debug", default=False, help="Enable debug logging")
-def cli(
-    image_ids: tuple[str],
-    circle: tuple[str],
-    pos: tuple[str],
-    polygon: tuple[str],
-    base_url: str,
-    token: str,
-    output_dir: Path,
-    run_id: Optional[str],
-    debug: bool,
-) -> None:
-    """Perform image cutouts from the Rubin Science Platform.
-
-    IMAGE_IDS should be one or more butler URIs identifying the images to cut out from.
-
-    Example:
-        vo-cutout --circle "55.7467 -32.2862 0.05" \\
-            butler://dp02/20d28216-534a-4102-b8a7-1c7f32a9b78c
-    """
-    if debug:
-        logger.setLevel(logging.DEBUG)
-
-    circle_list = list(circle) if circle else None
-    pos_list = list(pos) if pos else None
-    polygon_list = list(polygon) if polygon else None
-
-    try:
-        asyncio.run(
-            async_cutout(
-                image_ids=list(image_ids),
-                circle=circle_list,
-                pos=pos_list,
-                polygon=polygon_list,
-                base_url=base_url,
-                token=token,
-                output_dir=str(output_dir),
-                run_id=run_id,
-            )
-        )
-    except Exception as e:
-        raise click.ClickException(str(e))
+@click.group()
+@click.option('--base-url', required=True,
+              help='Base URL of the UWS service')
+@click.option('--token', required=True,
+              help='Authentication token')
+@click.pass_context
+def cli(ctx, base_url, token):
+    """CLI for interacting with a UWS service."""
+    ctx.ensure_object(dict)
+    ctx.obj['BASE_URL'] = base_url
+    ctx.obj['TOKEN'] = token
 
 
-if __name__ == "__main__":
+@cli.command()
+@click.option('--params', required=True, type=str,
+              help='Job parameters as a JSON string')
+@click.option('--run-id', default=None,
+              help='Optional run ID for the job')
+@click.option('--auto-start', is_flag=True, default=True,
+              help='Whether to start the job automatically')
+@click.pass_context
+def create_job(ctx, params, run_id, auto_start):
+    """Create a new job on the UWS service."""
+    async def _create_job():
+        async with UWSClient(ctx.obj['BASE_URL'], ctx.obj['TOKEN']) as client:
+            job_id = await client.create_job(eval(params), run_id, auto_start)
+            click.echo(f"Job created with ID: {job_id}")
+
+    asyncio.run(_create_job())
+
+
+@cli.command()
+@click.argument('job-id', required=True)
+@click.pass_context
+def job_status(ctx, job_id):
+    """Get the status of a job."""
+    async def _job_status():
+        async with UWSClient(ctx.obj['BASE_URL'], ctx.obj['TOKEN']) as client:
+            status = await client.get_job_status(job_id)
+            click.echo(status)
+
+    asyncio.run(_job_status())
+
+
+@cli.command()
+@click.argument('job-id', required=True)
+@click.argument('output-dir', required=True,
+                type=click.Path(file_okay=False, dir_okay=True))
+@click.pass_context
+def download_results(ctx, job_id, output_dir):
+    """Download results of a completed job."""
+    async def _download_results():
+        async with UWSClient(ctx.obj['BASE_URL'], ctx.obj['TOKEN']) as client:
+            results = await client.get_job_results(job_id)
+            for i, result in enumerate(results):
+                if result.get('href'):
+                    output_path = f"{output_dir}/result_{i}.fits"
+                    await client.download_result(result['href'], output_path)
+                    click.echo(f"Downloaded result to {output_path}")
+
+    asyncio.run(_download_results())
+
+
+@cli.command()
+@click.argument('job-id', required=True)
+@click.option('--timeout', default=3600,
+              help='Maximum wait time in seconds')
+@click.option('--poll-interval', default=10,
+              help='Time between status checks in seconds')
+@click.pass_context
+def wait_for_completion(ctx, job_id, timeout, poll_interval):
+    """Wait for a job to complete."""
+    async def _wait_for_completion():
+        async with UWSClient(ctx.obj['BASE_URL'], ctx.obj['TOKEN']) as client:
+            status = await client.wait_for_job_completion(job_id,
+                                                          timeout,
+                                                          poll_interval)
+            click.echo(f"Job completed with phase: {status['phase']}")
+
+    asyncio.run(_wait_for_completion())
+
+
+if __name__ == '__main__':
     cli()
