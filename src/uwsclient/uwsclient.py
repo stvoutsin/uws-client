@@ -3,11 +3,11 @@ from __future__ import annotations
 import aiohttp
 import logging
 import asyncio
-from models import UWSPhase
+from .models import UWSPhase
 import xml.etree.ElementTree as ET
 from typing import Optional, Dict, Any, Union, List
 import os
-from logger import logger
+from .logger import logger
 
 
 class UWSClient:
