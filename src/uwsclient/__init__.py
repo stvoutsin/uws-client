@@ -1,7 +1,6 @@
 """UWS client library with SODA implementation."""
-from .client import SODAClient, async_cutout
-from .uws import UWSClient
+from .uwsclient import UWSClient
 
 __version__ = "0.1.0"
 
-__all__ = ["UWSPhase", "UWSClient"]
+__all__ = ["UWSClient"]
