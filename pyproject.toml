@@ -26,10 +26,10 @@ version = "0.1.0"
 # dynamic = ["version"]
 
 [project.scripts]
-vo-cutout = "uwsclient.cli:cli"
+uwsclient = "uwsclient.cli:cli"
 
 [project.urls]
-Source = "https://github.com/stvoutsin/vo-cutout-client"
+Source = "https://github.com/stvoutsin/uws-client"
 
 [build-system]
 requires = ["setuptools>=42"]
