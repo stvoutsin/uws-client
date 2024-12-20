@@ -1,6 +1,6 @@
 import asyncio
 import click
-from uws_client import UWSClient
+from uwsclient import UWSClient
 
 
 @click.group()
