@@ -12,40 +12,39 @@ pip install .
 
 ```python
 
-    """Example usage of the UWS client."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
-    )
+from uwsclient import UWSClient
+from uwsclient.models import UWSPhase
 
-    async with UWSClient(
-            base_url="https://data-dev.lsst.cloud/api/cutout",
-            token=""
-    ) as client:
-        try:
-            # Create job
-            job_id = await client.create_job({
-                "circle": "",
-                "id": ""
-            })
-            logger(f"Created job: {job_id}")
+# Create client instance
+client = UWSClient(
+    base_url="https://example.com/cutout/",
+    token=""
+)
 
-            # Wait for completion
-            status = await client.wait_for_job_completion(job_id, timeout=300)
-            logger.info(f"Final status: {status['phase']}")
+# Cell 2 - Create and submit job
+query_params = {
+    "circle": "55.7467 -32.2862 0.05",
+    "id": ""
+}
 
-            # Get and download results if successful
-            if status['phase'] == UWSPhase.COMPLETED.value:
-                results = await client.get_job_results(job_id)
-                for i, result in enumerate(results):
-                    if result.get('href'):
-                        output_path = f"cutout_result_{i}.fits"
-                        await client.download_result(result['href'],
-                                                     output_path)
-                        logger.info(f"Downloaded result to {output_path}")
+job_id = client.create_job(query_params)
+print(f"Created job: {job_id}")
 
-        except Exception as e:
-            logger.info(f"Error: {e}")
+# Cell 3 - Wait for completion
+status = client.wait_for_job_completion(job_id, timeout=300)
+print(f"Final status: {status['phase']}")
+
+# Cell 4 - Download results if successful
+if status['phase'] == UWSPhase.COMPLETED.value:
+    results = client.get_job_results(job_id)
+    for i, result in enumerate(results):
+        if result.get('href'):
+            output_path = f"cutout_result_{i}.fits"
+            client.download_result(result['href'], output_path)
+            print(f"Downloaded result to {output_path}")
+
+# Cell 5 - Cleanup when done
+client.close()
 ```
 
 ## License
