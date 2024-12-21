@@ -18,7 +18,8 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "click",
-    "aiohttp",
+    "types-requests",
+    "requests",
 ]
 
 version = "0.1.0"
