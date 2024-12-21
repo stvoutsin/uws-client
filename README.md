@@ -1,4 +1,4 @@
-# UWS Cutout Client Library
+# UWS Client Library
 
 A Python library for interacting with Universal Worker Service (UWS) services asynchronously.
 
