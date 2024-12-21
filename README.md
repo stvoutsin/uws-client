@@ -21,7 +21,7 @@ client = UWSClient(
     token=""
 )
 
-# Cell 2 - Create and submit job
+# Create and submit job
 query_params = {
     "circle": "55.7467 -32.2862 0.05",
     "id": ""
@@ -30,11 +30,11 @@ query_params = {
 job_id = client.create_job(query_params)
 print(f"Created job: {job_id}")
 
-# Cell 3 - Wait for completion
+# Wait for completion
 status = client.wait_for_job_completion(job_id, timeout=300)
 print(f"Final status: {status['phase']}")
 
-# Cell 4 - Download results if successful
+# Download results if successful
 if status['phase'] == UWSPhase.COMPLETED.value:
     results = client.get_job_results(job_id)
     for i, result in enumerate(results):
@@ -43,7 +43,7 @@ if status['phase'] == UWSPhase.COMPLETED.value:
             client.download_result(result['href'], output_path)
             print(f"Downloaded result to {output_path}")
 
-# Cell 5 - Cleanup when done
+# Cleanup when done
 client.close()
 ```
 
